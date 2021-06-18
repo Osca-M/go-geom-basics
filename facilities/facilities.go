@@ -11,6 +11,7 @@ import (
 	"os"
 )
 
+// MedicalFacility a data mapping for medical facilities from our API
 type MedicalFacility struct {
 	gorm.Model
 	Geometry      postgis.PointS `json:"geometry"`
@@ -23,7 +24,7 @@ type MedicalFacility struct {
 	PubDate       string         `json:"pub_date"`
 	Street        string         `json:"street"`
 	Tel           string         `json:"tel"`
-	RefId         string         `json:"ref_id"`
+	RefID         string         `json:"ref_id"`
 	FacilityType  string         `json:"facility_type"`
 	ListSpecs     string         `json:"list_specs"`
 	Email         string         `json:"email"`
@@ -32,11 +33,12 @@ type MedicalFacility struct {
 	PublicPrivate string         `json:"public_private"`
 	Comments      string         `json:"comments"`
 	Postcode      string         `json:"postcode"`
-	Url           string         `json:"url"`
+	URL           string         `json:"url"`
 	SiteName      string         `json:"site_name"`
 	GeoQual       string         `json:"geo_qual"`
 }
 
+// CreateDB connects to our database, creates the medical_facilities table that can store MedicalFacility
 func CreateDB(db *gorm.DB) {
 	db.Exec("CREATE EXTENSION IF NOT EXISTS postgis;")
 	db.Exec("DROP TABLE IF EXISTS medical_facilities;")
@@ -71,6 +73,7 @@ func CreateDB(db *gorm.DB) {
 	}
 }
 
+// AddMedicalFacilities reads file or fetches data from API and inserts it into a database table
 func AddMedicalFacilities(db *gorm.DB) {
 	//resp, err := http.Get("https://gisco-services.ec.europa.eu/pub/healthcare/geojson/all.geojson")
 	filename, err := os.Open("Europe_Medical_Facilities-1623932428315.json")
@@ -79,13 +82,21 @@ func AddMedicalFacilities(db *gorm.DB) {
 	}
 	//defer resp.Body.Close()
 	//data, err := ioutil.ReadAll(resp.Body)
-	defer filename.Close()
+	defer func(filename *os.File) {
+		err := filename.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(filename)
 	data, err := ioutil.ReadAll(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var i map[string]interface{}
-	json.Unmarshal(data, &i)
+	err = json.Unmarshal(data, &i)
+	if err != nil {
+		log.Fatal(err)
+	}
 	features := i["features"].([]interface{})
 
 	for i := range features {
@@ -101,7 +112,7 @@ func AddMedicalFacilities(db *gorm.DB) {
 		pubDate := Properties.(map[string]interface{})["pub_date"].(string)
 		street := Properties.(map[string]interface{})["street"].(string)
 		tel := Properties.(map[string]interface{})["tel"].(string)
-		refId := Properties.(map[string]interface{})["id"].(string)
+		refID := Properties.(map[string]interface{})["id"].(string)
 		facilityType := Properties.(map[string]interface{})["facility_type"].(string)
 		listSpecs := Properties.(map[string]interface{})["list_specs"].(string)
 		email := Properties.(map[string]interface{})["email"].(string)
@@ -120,12 +131,12 @@ func AddMedicalFacilities(db *gorm.DB) {
 		//fmt.Println(geom, country, city, capBeds, emergency, refDate, houseNumber, pubDate, street, tel, refId, facilityType, listSpecs, email, hospitalName, cc, publicPrivate, comments, postcode, url, siteName, geoQual, Lat, Lng)
 		//fmt.Printf("Medical Facility %s\n", refId)
 		db.Create(&MedicalFacility{Geometry: XY, Country: country, City: city /*CapBeds: capBeds,*/, Emergency: emergency,
-			RefDate: refDate, HouseNumber: houseNumber, PubDate: pubDate, Street: street, Tel: tel, RefId: refId,
+			RefDate: refDate, HouseNumber: houseNumber, PubDate: pubDate, Street: street, Tel: tel, RefID: refID,
 			FacilityType: facilityType, ListSpecs: listSpecs, Email: email, HospitalName: hospitalName, Cc: cc,
-			PublicPrivate: publicPrivate, Comments: comments, Postcode: postcode, Url: url, SiteName: siteName,
+			PublicPrivate: publicPrivate, Comments: comments, Postcode: postcode, URL: url, SiteName: siteName,
 			GeoQual: geoQual})
 
-		fmt.Printf("Inserted %s medical facility\n", refId)
+		fmt.Printf("Inserted %s medical facility\n", refID)
 	}
 	fmt.Println("Done loading data")
 }
