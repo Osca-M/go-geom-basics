@@ -14,27 +14,27 @@ import (
 type MedicalFacility struct {
 	gorm.Model
 	Geometry      postgis.PointS `json:"geometry"`
-	Country       string        `json:"country"`
-	City          string        `json:"city"`
-	CapBeds       string        `json:"cap_beds,omitempty"`
-	Emergency     string        `json:"emergency"`
-	RefDate       string        `json:"ref_date"`
-	HouseNumber   string        `json:"house_number"`
-	PubDate       string        `json:"pub_date"`
-	Street        string        `json:"street"`
-	Tel           string        `json:"tel"`
-	RefId         string        `json:"ref_id"`
-	FacilityType  string        `json:"facility_type"`
-	ListSpecs     string        `json:"list_specs"`
-	Email         string        `json:"email"`
-	HospitalName  string        `json:"hospital_name"`
-	Cc            string        `json:"cc"`
-	PublicPrivate string        `json:"public_private"`
-	Comments      string        `json:"comments"`
-	Postcode      string        `json:"postcode"`
-	Url           string        `json:"url"`
-	SiteName      string        `json:"site_name"`
-	GeoQual       string        `json:"geo_qual"`
+	Country       string         `json:"country"`
+	City          string         `json:"city"`
+	CapBeds       string         `json:"cap_beds,omitempty"`
+	Emergency     string         `json:"emergency"`
+	RefDate       string         `json:"ref_date"`
+	HouseNumber   string         `json:"house_number"`
+	PubDate       string         `json:"pub_date"`
+	Street        string         `json:"street"`
+	Tel           string         `json:"tel"`
+	RefId         string         `json:"ref_id"`
+	FacilityType  string         `json:"facility_type"`
+	ListSpecs     string         `json:"list_specs"`
+	Email         string         `json:"email"`
+	HospitalName  string         `json:"hospital_name"`
+	Cc            string         `json:"cc"`
+	PublicPrivate string         `json:"public_private"`
+	Comments      string         `json:"comments"`
+	Postcode      string         `json:"postcode"`
+	Url           string         `json:"url"`
+	SiteName      string         `json:"site_name"`
+	GeoQual       string         `json:"geo_qual"`
 }
 
 func CreateDB(db *gorm.DB) {
@@ -119,7 +119,7 @@ func AddMedicalFacilities(db *gorm.DB) {
 
 		//fmt.Println(geom, country, city, capBeds, emergency, refDate, houseNumber, pubDate, street, tel, refId, facilityType, listSpecs, email, hospitalName, cc, publicPrivate, comments, postcode, url, siteName, geoQual, Lat, Lng)
 		//fmt.Printf("Medical Facility %s\n", refId)
-		db.Create(&MedicalFacility{Geometry: XY, Country:country, City:city, /*CapBeds: capBeds,*/ Emergency: emergency,
+		db.Create(&MedicalFacility{Geometry: XY, Country: country, City: city /*CapBeds: capBeds,*/, Emergency: emergency,
 			RefDate: refDate, HouseNumber: houseNumber, PubDate: pubDate, Street: street, Tel: tel, RefId: refId,
 			FacilityType: facilityType, ListSpecs: listSpecs, Email: email, HospitalName: hospitalName, Cc: cc,
 			PublicPrivate: publicPrivate, Comments: comments, Postcode: postcode, Url: url, SiteName: siteName,
