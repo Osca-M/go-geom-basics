@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"go-geom-basics/facilities"
+	"log"
 )
 
 const (
@@ -28,12 +29,14 @@ func main() {
 
 		}
 	}(sqlDB)
-	//gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}), &gorm.Config{})
-	//if err != nil {
-	//	panic(err)
-	//}
 
-	facilities.CreateDB(sqlDB)
-	facilities.AddMedicalFacilities(sqlDB)
+	err = facilities.CreateDB(sqlDB)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = facilities.AddMedicalFacilities(sqlDB)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("***...Exiting....***")
 }
