@@ -5,8 +5,6 @@ import (
 	"fmt"
 	_ "github.com/lib/pq"
 	"go-geom-basics/facilities"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 const (
@@ -30,12 +28,12 @@ func main() {
 
 		}
 	}(sqlDB)
-	gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
+	//gormDB, err := gorm.Open(postgres.New(postgres.Config{Conn: sqlDB}), &gorm.Config{})
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	facilities.CreateDB(gormDB)
-	facilities.AddMedicalFacilities(gormDB)
+	facilities.CreateDB(sqlDB)
+	facilities.AddMedicalFacilities(sqlDB)
 	fmt.Println("***...Exiting....***")
 }
