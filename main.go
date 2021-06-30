@@ -54,11 +54,23 @@ func allFacilities(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 		}
 	}(rows)
+	err = json.NewEncoder(w).Encode(convertRowsToGeoJSON(rows))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+func convertRowsToGeoJSON(r *sql.Rows) map[string]interface{} {
+	defer func(r *sql.Rows) {
+		err := r.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(r)
 	var medFacilities []*geojson.Feature
-	for rows.Next() {
+	for r.Next() {
 		var ewkbPoint ewkb.Point
 		f := new(facilities.MedicalFacility)
-		err := rows.Scan(&ewkbPoint, &f.Country, &f.City, &f.CapBeds, &f.Emergency, &f.RefDate, &f.HouseNumber,
+		err := r.Scan(&ewkbPoint, &f.Country, &f.City, &f.CapBeds, &f.Emergency, &f.RefDate, &f.HouseNumber,
 			&f.PubDate, &f.Street, &f.Tel, &f.RefID, &f.FacilityType, &f.ListSpecs, &f.Email, &f.HospitalName, &f.Cc,
 			&f.PublicPrivate, &f.Comments, &f.Postcode, &f.URL, &f.SiteName, &f.GeoQual)
 		if err != nil {
@@ -92,9 +104,9 @@ func allFacilities(w http.ResponseWriter, r *http.Request) {
 			},
 		)
 	}
-	if err := rows.Err(); err != nil {
+	if err := r.Err(); err != nil {
 		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	fc := geojson.FeatureCollection{Features: medFacilities}
 	bits, err := fc.MarshalJSON()
@@ -102,16 +114,12 @@ func allFacilities(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 	var dat map[string]interface{}
-
 	err = json.Unmarshal(bits, &dat)
 	if err != nil {
-		return 
+		log.Fatal(err)
 	}
+	return dat
 
-	err = json.NewEncoder(w).Encode(dat)
-	if err != nil {
-		return 
-	}
 
 }
 func handleRequests() {
