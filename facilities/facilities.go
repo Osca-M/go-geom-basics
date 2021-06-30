@@ -18,7 +18,7 @@ type MedicalFacility struct {
 	Geometry      json.RawMessage `json:"geometry"`
 	Country       string          `json:"country"`
 	City          string          `json:"city"`
-	CapBeds       sql.NullString          `json:"cap_beds,omitempty"`
+	CapBeds       sql.NullString  `json:"cap_beds,omitempty"`
 	Emergency     string          `json:"emergency"`
 	RefDate       string          `json:"ref_date"`
 	HouseNumber   string          `json:"house_number"`
