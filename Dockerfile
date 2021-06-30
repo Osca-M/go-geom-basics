@@ -11,3 +11,4 @@ RUN go build -o main .
 CMD ["/app/main"]
 
 # docker run --net=host -it go-geom-basics
+# Note the reliance on a hosts DB
