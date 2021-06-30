@@ -7,7 +7,6 @@ import (
 	"github.com/lib/pq"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/ewkbhex"
-	"gorm.io/gorm"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,7 +15,6 @@ import (
 
 // MedicalFacility a data mapping for medical facilities from our API
 type MedicalFacility struct {
-	gorm.Model
 	Geometry      json.RawMessage `json:"geometry"`
 	Country       string          `json:"country"`
 	City          string          `json:"city"`
