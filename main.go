@@ -13,6 +13,7 @@ import (
 	"go-geom-basics/facilities"
 	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -24,40 +25,6 @@ const (
 )
 
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-
-// allFacilities return a geojson of all medical facilities
-//goland:noinspection SqlNoDataSourceInspection
-func allFacilities(w http.ResponseWriter, r *http.Request) {
-	db, err := sql.Open("postgres", psqlInfo)
-	if err != nil {
-		panic(err)
-	}
-	defer func(sqlDB *sql.DB) {
-		err := sqlDB.Close()
-		if err != nil {
-
-		}
-	}(db)
-	rows, err := db.Query(`
-		SELECT ST_AsEWKB(geom), country, city, cap_beds, emergency, ref_date, house_number, pub_date, street, tel,
-		       ref_id, facility_type, list_specs, email, hospital_name, cc, public_private, comments, postcode, url,
-		       site_name, geo_qual
-		FROM public.medical_facilities;
-`)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(rows)
-	err = json.NewEncoder(w).Encode(convertRowsToGeoJSON(rows))
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 // convertRowsToGeoJSON Generic function that converts rows from sql queries to a GeoJSON FeatureCollection
 func convertRowsToGeoJSON(r *sql.Rows) map[string]interface{} {
@@ -123,10 +90,81 @@ func convertRowsToGeoJSON(r *sql.Rows) map[string]interface{} {
 
 }
 
+// allFacilities return a geojson of all medical facilities
+//goland:noinspection SqlNoDataSourceInspection
+func allFacilities(w http.ResponseWriter, r *http.Request) {
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer func(sqlDB *sql.DB) {
+		err := sqlDB.Close()
+		if err != nil {
+
+		}
+	}(db)
+	rows, err := db.Query(`
+		SELECT ST_AsEWKB(geom), country, city, cap_beds, emergency, ref_date, house_number, pub_date, street, tel,
+		       ref_id, facility_type, list_specs, email, hospital_name, cc, public_private, comments, postcode, url,
+		       site_name, geo_qual
+		FROM public.medical_facilities;
+`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(rows)
+	err = json.NewEncoder(w).Encode(convertRowsToGeoJSON(rows))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// facilitiesInACountry Lists medical facilities that are within the country in the query parameter same can be done for citi
+func facilitiesInACountry(w http.ResponseWriter, r *http.Request) {
+	country := r.URL.Query()["country"][0]
+	searchCountry := strings.Title(strings.ToLower(country))
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer func(sqlDB *sql.DB) {
+		err := sqlDB.Close()
+		if err != nil {
+
+		}
+	}(db)
+	rows, err := db.Query(`
+		SELECT ST_AsEWKB(geom), country, city, cap_beds, emergency, ref_date, house_number, pub_date, street, tel,
+		       ref_id, facility_type, list_specs, email, hospital_name, cc, public_private, comments, postcode, url,
+		       site_name, geo_qual
+		FROM public.medical_facilities WHERE country=$1;
+`, searchCountry)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(rows)
+	err = json.NewEncoder(w).Encode(convertRowsToGeoJSON(rows))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // handleRequests handles all our http requests and routes them using gorilla/mux package
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/all-facilities", allFacilities).Methods("GET")
+	myRouter.HandleFunc("/filter-by-country", facilitiesInACountry).Methods("GET")
 	log.Fatal(http.ListenAndServe(":5000", myRouter))
 }
 func main() {
