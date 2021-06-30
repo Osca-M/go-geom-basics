@@ -25,7 +25,6 @@ const (
 
 var psqlInfo = fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
-
 // allFacilities return a geojson of all medical facilities
 //goland:noinspection SqlNoDataSourceInspection
 func allFacilities(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +58,8 @@ func allFacilities(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 }
+
+// convertRowsToGeoJSON Generic function that converts rows from sql queries to a GeoJSON FeatureCollection
 func convertRowsToGeoJSON(r *sql.Rows) map[string]interface{} {
 	defer func(r *sql.Rows) {
 		err := r.Close()
@@ -80,26 +81,26 @@ func convertRowsToGeoJSON(r *sql.Rows) map[string]interface{} {
 			medFacilities, &geojson.Feature{
 				Geometry: ewkbPoint.Point,
 				Properties: map[string]interface{}{
-					"Country": &f.Country,
-					"City": &f.City,
-					"CapBeds": &f.CapBeds,
-					"Emergency": &f.Emergency,
-					"RefDate": &f.RefDate,
-					"HouseNumber": &f.HouseNumber,
-					"PubDate": &f.PubDate,
-					"Street": &f.Street,
-					"Tel": &f.Tel,
-					"RefID": &f.RefID,
-					"FacilityType": &f.FacilityType,
-					"ListSpecs": &f.ListSpecs,
-					"Email": &f.Email,
-					"HospitalName": &f.HospitalName,
-					"Cc": &f.Cc,
+					"Country":       &f.Country,
+					"City":          &f.City,
+					"CapBeds":       &f.CapBeds,
+					"Emergency":     &f.Emergency,
+					"RefDate":       &f.RefDate,
+					"HouseNumber":   &f.HouseNumber,
+					"PubDate":       &f.PubDate,
+					"Street":        &f.Street,
+					"Tel":           &f.Tel,
+					"RefID":         &f.RefID,
+					"FacilityType":  &f.FacilityType,
+					"ListSpecs":     &f.ListSpecs,
+					"Email":         &f.Email,
+					"HospitalName":  &f.HospitalName,
+					"Cc":            &f.Cc,
 					"PublicPrivate": &f.PublicPrivate,
-					"Comments": &f.Comments,
-					"Postcode": &f.Postcode,
-					"URL": &f.URL,
-					"SiteName": &f.SiteName,
+					"Comments":      &f.Comments,
+					"Postcode":      &f.Postcode,
+					"URL":           &f.URL,
+					"SiteName":      &f.SiteName,
 				},
 			},
 		)
@@ -120,8 +121,9 @@ func convertRowsToGeoJSON(r *sql.Rows) map[string]interface{} {
 	}
 	return dat
 
-
 }
+
+// handleRequests handles all our http requests and routes them using gorilla/mux package
 func handleRequests() {
 	myRouter := mux.NewRouter().StrictSlash(true)
 	myRouter.HandleFunc("/all-facilities", allFacilities).Methods("GET")
@@ -150,9 +152,6 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
 	handleRequests()
 	fmt.Println("***...Exiting....***")
 }
